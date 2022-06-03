@@ -4,15 +4,15 @@ from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-DATABASE_NAME = "trivia"
-DATABASE_PATH = "postgresql://{}/{}".format('localhost:5432', DATABASE_NAME)
+database_name = "trivia"
+database_path = "postgres://{}/{}".format('localhost:5432', database_name)
 
 db = SQLAlchemy()
 
 
-def setup_db(app, database_path=DATABASE_PATH):
+def setup_db(app, database_path=database_path):
     '''db configurations'''
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_PATH
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)

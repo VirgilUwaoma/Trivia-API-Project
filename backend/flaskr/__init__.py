@@ -1,11 +1,24 @@
+from multiprocessing.dummy import current_process
 import os
 import random
+from re import A
+from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
+
+
+def pagination(request, selection):
+    'pagination helper function'
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+    return current_questions
 
 
 def create_app(test_config=None):
@@ -35,7 +48,14 @@ def create_app(test_config=None):
     '''
     @app.route('/categories')
     def get_categories():
-        pass
+        selection = Category.query.order_by(Category.id).all()
+        categories = [cat.format() for cat in selection]
+        if len(categories) == 0:
+            abort(404)
+        return jsonify({
+          'success': True,
+          'categories': categories
+        })
 
 
     '''

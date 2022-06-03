@@ -1,3 +1,4 @@
+'''testing endpoints'''
 import os
 import unittest
 import json
@@ -28,11 +29,14 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
-    def 
+    def test_get_categories(self):
+        '''test getting all categories'''
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
+        self.assertEqual(len(data['categories']), Category.query.count())
 
 
 # Make the tests conveniently executable

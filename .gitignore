@@ -1,2 +1,10 @@
 .vscode/
 .DS_Store
+env/
+__pycache__/
+package-lock.json
+package.json
+node_modules/
+frontend/node_modules/
+frontend/package-lock.json
+frontend/package.json

@@ -3,6 +3,7 @@ import os
 import random
 from re import A
 from unicodedata import category
+from webbrowser import get
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -40,16 +41,11 @@ def create_app(test_config=None):
     @app.route('/')
     def hello():
         return 'Hello World!'
-    
-    '''
-    @TODO: 
-    Create an endpoint to handle GET requests 
-    for all available categories.
-    '''
+
     @app.route('/categories')
     def get_categories():
         selection = Category.query.order_by(Category.id).all()
-        categories = [cat.format() for cat in selection]
+        categories = {category.id: category.type for category in selection}
         if len(categories) == 0:
             abort(404)
         return jsonify({
@@ -57,27 +53,36 @@ def create_app(test_config=None):
           'categories': categories
         })
 
+    @app.route('/questions')
+    def retrieve_questions():
+        selection = Question.query.order_by(Question.id).all()
+        questions = pagination(request, selection)
+        categories = Category.query.order_by(Category.id).all()
+        if len(questions) == 0:
+            abort(404)
+        return jsonify({
+          'success': True,
+          'categories': {
+            category.id: category.type for category in categories
+            },
+          'questions': questions,
+          'total_questions': len(selection),
+          'current_category': None
+        })
 
-    '''
-    @TODO: 
-    Create an endpoint to handle GET requests for questions, 
-    including pagination (every 10 questions). 
-    This endpoint should return a list of questions, 
-    number of total questions, current category, categories. 
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(
+              Question.id == question_id).one_or_none()
+            question.delete()
+            return jsonify({
+              'success': True,
+              'deleted': question.id
+            })
+        except:
+            abort(422)
 
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions. 
-    '''
-
-    '''
-    @TODO: 
-    Create an endpoint to DELETE question using a question ID. 
-
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page. 
-    '''
 
     '''
     @TODO: 

@@ -1,12 +1,9 @@
-from multiprocessing.dummy import current_process
 import os
 import random
-from re import A
-from unicodedata import category
-from webbrowser import get
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import json
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
@@ -38,12 +35,9 @@ def create_app(test_config=None):
         )
         return response
 
-    @app.route('/')
-    def hello():
-        return 'Hello World!'
-
     @app.route('/categories')
     def get_categories():
+        '''retrieve all categories'''
         selection = Category.query.order_by(Category.id).all()
         categories = {category.id: category.type for category in selection}
         if len(categories) == 0:
@@ -55,6 +49,7 @@ def create_app(test_config=None):
 
     @app.route('/questions')
     def retrieve_questions():
+        '''retrieve all questions'''
         selection = Question.query.order_by(Question.id).all()
         questions = pagination(request, selection)
         categories = Category.query.order_by(Category.id).all()
@@ -72,6 +67,7 @@ def create_app(test_config=None):
 
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
+        '''delete a question using its id'''
         try:
             question = Question.query.filter(
               Question.id == question_id).one_or_none()
@@ -83,28 +79,46 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        body = request.get_json()
+        if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
+            abort(422)
+        question = body.get("question")
+        answer = body.get("answer")
+        difficulty = body.get("difficulty")
+        category = body.get("category")
 
-    '''
-    @TODO: 
-    Create an endpoint to POST a new question, 
-    which will require the question and answer text, 
-    category, and difficulty score.
+        try:
+            new_question = Question(question=question,
+                                    answer=answer,
+                                    category=category,
+                                    difficulty=difficulty)
+            new_question.insert()
+            return jsonify({
+              'success': True,
+              'created': new_question.id
+            })
+        except:
+            abort(422)
 
-    TEST: When you submit a question on the "Add" tab, 
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.  
-    '''
+    @app.route('/questions/search', methods=['POST'])
+    def search_question():
+        body = request.get_json()
+        search_term = body.get("searchTerm", None)
+        if search_term:
+            search_questions = Question.query.filter(
+              Question.question.ilike(f'%{search_term}%')).all()
 
-    '''
-    @TODO: 
-    Create a POST endpoint to get questions based on a search term. 
-    It should return any questions for whom the search term 
-    is a substring of the question. 
-
-    TEST: Search by any phrase. The questions list will update to include 
-    only question that include that string within their question. 
-    Try using the word "title" to start. 
-    '''
+            return jsonify({
+              'success': True,
+              'questions': [
+                question.format() for question in search_questions
+                ],
+              'total_questions': len(search_questions),
+              'current_category': None
+            })
+        abort(404)
 
     '''
     @TODO: 

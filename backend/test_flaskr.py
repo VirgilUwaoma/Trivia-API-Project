@@ -90,19 +90,30 @@ class TriviaTestCase(unittest.TestCase):
     #         )
     #     self.assertTrue(data["questions"])
 
-    def test_get_questions_by_categories(self):
-        '''tests getting all question by categories'''
-        category_id = 3
-        res = self.client().get(f'/categories/{category_id}/questions')
+    # def test_get_questions_by_categories(self):
+    #     '''tests getting all question by categories'''
+    #     category_id = 3
+    #     res = self.client().get(f'/categories/{category_id}/questions')
+    #     data = json.loads(res.data)
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data["success"], True)
+    #     self.assertEqual(
+    #         data['total_questions'],
+    #         Question.query.filter(Question.category == category_id).count()
+    #         )
+    #     self.assertTrue(data["questions"])
+    #     self.assertTrue(data["current_category"])
+
+    def test_play_the_quiz(self):
+        '''tests playing the quiz'''
+        new_quiz = {
+            'previous_questions': [],
+            'quiz_category': {'type': 'Entertainment', 'id': 5}
+            }
+        res = self.client().post('/quizzes', json=new_quiz)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
-        self.assertEqual(
-            data['total_questions'],
-            Question.query.filter(Question.category == category_id).count()
-            )
-        self.assertTrue(data["questions"])
-        self.assertTrue(data["current_category"])
+        self.assertEqual(data['success'], True)
 
 
 # Make the tests conveniently executable

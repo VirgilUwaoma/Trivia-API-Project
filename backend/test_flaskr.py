@@ -76,19 +76,33 @@ class TriviaTestCase(unittest.TestCase):
     #     self.assertEqual(data["success"], True)
     #     self.assertEqual(total_questions, total_questions_before + 1)
 
-    def test_search_question(self):
-        '''tests question searching'''
-        search_term = {"searchTerm": 'what'}
-        res = self.client().post('/questions/search', json=search_term)
+    # def test_search_question(self):
+    #     '''tests question searching'''
+    #     search_term = {"searchTerm": 'what'}
+    #     res = self.client().post('/questions/search', json=search_term)
+    #     data = json.loads(res.data)
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data["success"], True)
+    #     self.assertEqual(
+    #         data['total_questions'],
+    #         Question.query.filter(Question.question.ilike(
+    #             f'%{search_term["searchTerm"]}%')).count()
+    #         )
+    #     self.assertTrue(data["questions"])
+
+    def test_get_questions_by_categories(self):
+        '''tests getting all question by categories'''
+        category_id = 3
+        res = self.client().get(f'/categories/{category_id}/questions')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertEqual(
             data['total_questions'],
-            Question.query.filter(Question.question.ilike(
-                f'%{search_term["searchTerm"]}%')).count()
+            Question.query.filter(Question.category == category_id).count()
             )
         self.assertTrue(data["questions"])
+        self.assertTrue(data["current_category"])
 
 
 # Make the tests conveniently executable
